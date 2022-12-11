@@ -72,9 +72,8 @@ app.post('/todo/create', async (req, res) => {
 // get to do items
 app.get("/todo/get", (req, res) => {
     ToDoItem.find({}, (err, items) => {
-        res.json(items);
         console.log("Retrieved all to-do items!");
-        // res.render("todo.ejs", { todoTasks: tasks });
+        res.json(items);
     });
 });
 
@@ -87,14 +86,14 @@ app.post("/todo/update/:id", (req, res) => {
                 console.log(err)
             }
             else {
-                console.log("Updated User : ", docs);
-                res.json(docs);
+                console.log("Updated to-do item : ", docs);
+                res.send("Updated to-do item!");
             }
         });
 });
 
 // delete to do item by id
-app.delete("/todo/delete/:id"), (req, res) => {
+app.delete('/todo/delete/:id', (req, res) => {
     const id = req.params.id;
     ToDoItem.findByIdAndRemove(id,
         function (err, docs) {
@@ -102,30 +101,49 @@ app.delete("/todo/delete/:id"), (req, res) => {
                 console.log(err)
             }
             else {
-                console.log("Deleted User : ", docs);
-                res.message("Deleted to do item %d", id);
+                console.log("Deleted to-do item: ", docs);
+                res.json(docs);
             }
         });
+ })
 
-};
+ // filter
+app.post('/todo/filter', (req, res) => {
+    const filters = req.body;
+    ToDoItem.find(filters,
+        function (err, docs) {
+            if (err) {
+                console.log(err)
+            }
+            else {
+                console.log("Filtered results : ", docs);
+                res.json(docs);
+            }
+        });
+ })
 
-// async function main() {
+  // sort by dueDate
+  // order: 1 for ascending order, -1 for descending order
+app.post('/todo/sort', (req, res) => {
+    const order = req.body.order;
+    let flag = 0;
+    if(order == 'descending') {
+        flag = -1;
+    } else if (order == 'ascending') {
+        flag = 1;
+    } else {
+        res.send("Please enter a valid order value!");
+    }
 
-//     const { MongoClient, ServerApiVersion } = require('mongodb');
-//     const uri = "mongodb+srv://rootuser:HzmyrO8m5yMjrQ3B@cluster0.icmtvjb.mongodb.net/?retryWrites=true&w=majority";
-//     const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true, serverApi: ServerApiVersion.v1 });
+    ToDoItem.find({},
+        function (err, docs) {
+            if (err) {
+                console.log(err)
+            }
+            else {
+                console.log("Sorted results : ", docs);
+                res.json(docs);
+            }
+        }).sort({"dueDate": order});
 
-//     try {
-//         await client.connect();
-
-//         await listDatabases(client);
-//     } catch (e) {
-//         console.error(e);
-//     } finally {
-//         await client.close();
-//     }
-
-
-// }
-
-// main().catch(console.error);
+ })
